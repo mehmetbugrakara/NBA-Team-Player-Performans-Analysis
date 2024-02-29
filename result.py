@@ -1,34 +1,70 @@
 import pandas as pd
-import math
 import matplotlib.pyplot as plt
 import seaborn as sns
-estimatedteam=pd.read_csv('estimatedteam.csv')
 
-estimatedteam=estimatedteam.drop(columns=['Unnamed: 0'])
+def load_data(file_path):
+    """
+    Load data from a CSV file.
 
-x=pd.DataFrame()
+    Args:
+    file_path (str): Path to the CSV file.
 
-y=['W','L']
+    Returns:
+    DataFrame: Loaded data.
+    """
+    return pd.read_csv(file_path)
 
-def sumer(a,b):
-    return a+b
+def calculate_winning_losses_ratio(estimated_team):
+    """
+    Calculate the winning and losses ratio for each team.
 
-estimatedteam['toplam'] = estimatedteam.apply(lambda x: sumer(x['DRtg'], x['ORtg']), axis=1)
+    Args:
+    estimated_team (DataFrame): DataFrame containing estimated team data.
 
-Teams=['ATL','BOS','BRK','CHI','CHO','CLE','DAL','DEN','DET','GSW','HOU','IND','LAC','LAL','MEM','MIA','MIL','MIN','NOP','NYK','OKC','ORL','PHI','PHO','POR','SAC','SAS','TOR','UTA','WAS']
+    Returns:
+    DataFrame: DataFrame with winning and losses ratio for each team.
+    """
+    teams = estimated_team['Team']
+    winning_losses_ratio = pd.DataFrame(columns=['W', 'L'])
 
-team=pd.DataFrame(data=Teams,columns=['Team'])
-for i in range(len(estimatedteam)):
-    
-    x.loc[i,0]=(82*estimatedteam.iloc[i,0]/estimatedteam.iloc[i,2])
-    x.loc[i,1]=82-x.loc[i,0]
-    
+    for i in range(len(estimated_team)):
+        total_games = 82  # Total number of games in a season
+        estimated_wins = 82 * estimated_team.iloc[i, 0] / estimated_team.iloc[i, 2]
+        estimated_losses = total_games - estimated_wins
+        winning_losses_ratio.loc[i] = [estimated_wins, estimated_losses]
 
-x.rename(columns = {'0':'W', '1':'L'}, inplace = True)
+    return winning_losses_ratio
 
-FinalResult=pd.concat([team,x],axis=1)
+def plot_team_performance(winning_losses_ratio, teams):
+    """
+    Plot the performance of each team based on their winning and losses ratio.
 
-sns.scatterplot(x=0, y=1, data=FinalResult,hue='Team')
+    Args:
+    winning_losses_ratio (DataFrame): DataFrame containing winning and losses ratio for each team.
+    teams (list): List of team names.
 
- 
+    Returns:
+    None
+    """
+    sns.scatterplot(x='W', y='L', data=winning_losses_ratio, hue='Team')
+    plt.xlabel('Wins')
+    plt.ylabel('Losses')
+    plt.title('Team Performance')
+    plt.show()
 
+def main():
+    # Load data
+    estimated_team = load_data('estimatedteam.csv')
+    estimated_team = estimated_team.drop(columns=['Unnamed: 0'])
+
+    # Calculate winning and losses ratio
+    winning_losses_ratio = calculate_winning_losses_ratio(estimated_team)
+
+    # Define team names
+    teams = ['ATL', 'BOS', 'BRK', 'CHI', 'CHO', 'CLE', 'DAL', 'DEN', 'DET', 'GSW', 'HOU', 'IND', 'LAC', 'LAL', 'MEM', 'MIA', 'MIL', 'MIN', 'NOP', 'NYK', 'OKC', 'ORL', 'PHI', 'PHO', 'POR', 'SAC', 'SAS', 'TOR', 'UTA', 'WAS']
+
+    # Plot team performance
+    plot_team_performance(winning_losses_ratio, teams)
+
+if __name__ == "__main__":
+    main()
